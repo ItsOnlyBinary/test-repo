@@ -80,7 +80,7 @@ kiwi.plugin('asl', (kiwi, log) => {
             return;
         }
 
-        const url = avatarsUrl + user.account + '.png';
+        const url = avatarsUrl + user.account.toLowerCase() + '.png';
 
         if (config.getSetting('preload_avatars')) {
             const img = new Image();

@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $img->setImageFormat("png");
 
     // Save the resized image to a predefined directory
-    $filename = $account . ".png";
+    $filename = strtolower($account) . ".png";
     try {
         if (!$img->writeImage($avatarDir . $filename)) {
             throw new Exception();
