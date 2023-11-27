@@ -39,12 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $headers = getallheaders();
 
-    if (!isset($headers['Authorization'])) {
+    if (!isset($headers['authorization'])) {
         http_response_code(401);
         die("Token not provided");
     }
 
-    $token = $headers['Authorization'];
+    $token = $headers['authorization'];
 
     // Validate JWT token
     $account = validateToken($token, $jwtKey);

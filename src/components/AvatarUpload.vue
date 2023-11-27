@@ -116,7 +116,7 @@ export default {
                         fetch(config.getSetting('api_url'), {
                             method: 'POST',
                             headers: {
-                                Authorization: token,
+                                authorization: token,
                             },
                             body: formData,
                         }).then((response) => {
