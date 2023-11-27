@@ -124,9 +124,10 @@ export default {
                                 throw new Error();
                             }
                             const avatarUrl = config.getSetting('avatars_url');
+                            const lcAccount = this.user.account.toLowerCase();
                             Object.assign(this.user.avatar, {
                                 small: '',
-                                large: avatarUrl + this.user.account + '.png?cb=' + Date.now(),
+                                large: avatarUrl + lcAccount + '.png?cb=' + Date.now(),
                             });
                         }).catch(() => {
                             this.postError = '_error';
