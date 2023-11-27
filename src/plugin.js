@@ -11,7 +11,9 @@ kiwi.plugin('asl', (kiwi, log) => {
 
     kiwi.addTranslations(config.configBase, translations);
 
-    kiwi.addUi('userbox_info', BasicInfo);
+    if (!kiwi.userboxInfoPlugins.length) {
+        kiwi.addUi('userbox_info', BasicInfo);
+    }
     kiwi.addUi('userbox_info', AvatarUpload);
 
     if (config.getSetting('set_avatars')) {

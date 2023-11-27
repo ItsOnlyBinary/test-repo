@@ -30,6 +30,9 @@ It requires the ircd to support EXTJWT tokens, and a php server to upload the av
    {"name": "avatar-upload", "url": "/plugins/plugin-avatar-upload.js"}
    ```
 
+   > note: This plugin changes its behaviour based on the presence of other plugins. It is recommended to load this plugin after `plugin-asl` and `plugin-avatars`
+
+
 #### Configuration
 
 ``` json5
