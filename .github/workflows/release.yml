@@ -18,7 +18,7 @@ jobs:
         id: release-title
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             const title = context.payload.pull_request.title;
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
@@ -37,7 +37,7 @@ jobs:
       - name: Set PR to draft
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             github.rest.pulls.update({
               owner: context.repo.owner,
@@ -81,7 +81,7 @@ jobs:
         id: create-release-id
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             const release = await github.rest.repos.createRelease({
               owner: context.repo.owner,
@@ -97,7 +97,7 @@ jobs:
         if: steps.create-release-id.outputs.release_id != ''
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             const releaseId = context.payload.workflowRun.outputs.release_id;
             const currentBody = context.payload.pull_request.body;
@@ -112,7 +112,7 @@ jobs:
       - name: Remove draft status from PR
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             await github.rest.pulls.update({
               owner: context.repo.owner,,
@@ -130,7 +130,7 @@ jobs:
         id: release-title
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             const title = context.payload.pull_request.title;
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
@@ -183,7 +183,7 @@ jobs:
       - name: Attach zip to draft release
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             const fileName = "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip";
             await github.rest.repos.uploadReleaseAsset({
