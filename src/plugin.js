@@ -51,7 +51,6 @@ kiwi.plugin('asl', (kiwi, log) => {
         const force = !!_force;
         const user = kiwi.state.getUser(net.id, nick);
         if (!user) {
-            // Could not get the user
             return;
         }
 
