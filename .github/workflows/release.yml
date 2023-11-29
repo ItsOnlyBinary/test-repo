@@ -1,0 +1,189 @@
+name: Release Workflow
+
+on:
+  pull_request:
+    types:
+      - opened
+      - closed
+      - synchronize
+
+jobs:
+  pull-request:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+
+    steps:
+      - name: Check if PR title is a release title
+        id: release-title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = github.context.payload.pull_request.title;
+            const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
+
+            if (!versionRegex.test(title)) {
+              core.setFailed("PR title does not match the release pattern");
+            }
+
+            core.setOutput("release_version", title.match(versionRegex)[1]);
+
+      - name: Set PR to draft
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.pulls.update({
+              owner: github.context.repo.owner,
+              repo: github.context.repo.repo,
+              pull_number: github.context.payload.pull_request.number,
+              draft: true
+            });
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check package.json version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [[ $version != "${{ steps.release-title.outputs.release_version }}" ]]; then
+            echo "PR does not match package.json version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Check for release id in PR message
+        id: check-release-id
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const regex = /Release ID: (\d+)/;
+            const match = context.payload.pull_request.body.match(regex);
+            const releaseId = match ? match[1] : null;
+            core.setOutput('release_id', releaseId);
+
+      - name: Create draft release
+        if: steps.check-release-id.outputs.release_id == ''
+        id: create-release-id
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const release = await github.repos.createRelease({
+              owner: github.context.repo.owner,
+              repo: github.context.repo.repo,
+              tag_name: `v${{ steps.release-title.outputs.release_version }}`,
+              name: github.context.payload.pull_request.title,
+              draft: true
+            });
+
+            core.setOutput("release_id", release.data.id);
+
+      - name: Append release id to PR message
+        if: steps.create-release-id.outputs.release_id != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = context.payload.workflowRun.outputs.release_id;
+            const currentBody = context.payload.pull_request.body;
+            const newBody = `${currentBody}\n\nRelease ID: ${releaseId}`;
+            await github.pulls.update({
+              owner: github.context.repo.owner,,
+              repo: github.context.repo.repo,
+              pull_number: github.context.payload.pull_request.number,
+              body: newBody
+            });
+
+      - name: Remove draft status from PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.pulls.update({
+              owner: github.context.repo.owner,,
+              repo: github.context.repo.repo,
+              pull_number: github.context.payload.pull_request.number,
+              draft: false
+            });
+
+  merged-request:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed' && github.event.pull_request.merged
+
+    steps:
+      - name: Check if PR title is a release title
+        id: release-title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = github.context.payload.pull_request.title;
+            const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
+
+            if (!versionRegex.test(title)) {
+              core.setFailed("PR title does not match the release pattern");
+            }
+
+            core.setOutput("release_version", title.match(versionRegex)[1]);
+
+      - name: Check for release id in PR message
+        id: check-release-id
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const regex = /Release ID: (\d+)/;
+            const match = context.payload.pull_request.body.match(regex);
+            const releaseId = match ? match[1] : null;
+
+            if (!releaseId) {
+              core.setFailed("PR does not contain a release id");
+            }
+            core.setOutput('release_id', releaseId);
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check package.json version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [[ $version != "${{ steps.release-title.outputs.release_version }}" ]]; then
+            echo "PR does not match package.json version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Create zip
+        run: |
+          mv dist plugins
+          zip -r -9 "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip" plugins
+
+      - name: Attach zip to draft release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fileName = "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip";
+            await github.repos.uploadReleaseAsset({
+              owner: github.context.repo.owner,
+              repo: github.context.repo.repo,
+              release_id: ${{ steps.check-release-id.outputs.release_id }},
+              name: fileName,
+              data: require('fs').readFileSync(fileName)
+            });

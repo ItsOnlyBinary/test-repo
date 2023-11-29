@@ -19,7 +19,7 @@ module.exports = (env, argv, config) => {
                 compressionOptions: {
                     level: 9,
                 },
-                threshold: 10240,
+                threshold: 1024,
             }),
             new CompressionPlugin({
                 filename: '[path][base].br',
@@ -30,7 +30,7 @@ module.exports = (env, argv, config) => {
                         [zlib.constants.BROTLI_PARAM_QUALITY]: 8,
                     },
                 },
-                threshold: 10240,
+                threshold: 1024,
             }),
         ],
 
