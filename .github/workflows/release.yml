@@ -159,14 +159,14 @@ jobs:
       - name: Create zip
         run: |
           mv dist plugins
-          zip -r -9 "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip" plugins
+          zip -r -9 "${{ github.event.repository.name }}-v${{ steps.release-title.outputs.release_version }}.zip" plugins
 
       - name: Attach zip to draft release
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
-            const fileName = "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip";
+            const fileName = "${{ github.event.repository.name }}-v${{ steps.release-title.outputs.release_version }}.zip";
             await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
               repo: context.repo.repo,
