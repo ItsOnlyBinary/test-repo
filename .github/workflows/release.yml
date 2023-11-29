@@ -99,7 +99,7 @@ jobs:
         with:
           github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
-            const releaseId = context.payload.workflowRun.outputs.release_id;
+            const releaseId = ${{ steps.create-release-id.outputs.release_id }};
             const currentBody = context.payload.pull_request.body || '';
             const newBody = `${currentBody}\n\nRelease ID: ${releaseId}`;
             await github.rest.pulls.update({
