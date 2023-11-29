@@ -19,8 +19,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const title = github.context.payload.pull_request.title;
+            const title = context.payload.pull_request.title;
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
+
+            console.log('context', context);
 
             if (!versionRegex.test(title)) {
               core.setFailed("PR title does not match the release pattern");
@@ -34,9 +36,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.pulls.update({
-              owner: github.context.repo.owner,
-              repo: github.context.repo.repo,
-              pull_number: github.context.payload.pull_request.number,
+              owner: context.payload.repo.owner,
+              repo: context.payload.repo.repo,
+              pull_number: context.payload.pull_request.number,
               draft: true
             });
 
@@ -78,10 +80,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const release = await github.repos.createRelease({
-              owner: github.context.repo.owner,
-              repo: github.context.repo.repo,
+              owner: context.payload.repo.owner,
+              repo: context.payload.repo.repo,
               tag_name: `v${{ steps.release-title.outputs.release_version }}`,
-              name: github.context.payload.pull_request.title,
+              name: context.payload.pull_request.title,
               draft: true
             });
 
@@ -97,9 +99,9 @@ jobs:
             const currentBody = context.payload.pull_request.body;
             const newBody = `${currentBody}\n\nRelease ID: ${releaseId}`;
             await github.pulls.update({
-              owner: github.context.repo.owner,,
-              repo: github.context.repo.repo,
-              pull_number: github.context.payload.pull_request.number,
+              owner: context.payload.repo.owner,,
+              repo: context.payload.repo.repo,
+              pull_number: context.payload.pull_request.number,
               body: newBody
             });
 
@@ -109,9 +111,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             await github.pulls.update({
-              owner: github.context.repo.owner,,
-              repo: github.context.repo.repo,
-              pull_number: github.context.payload.pull_request.number,
+              owner: context.payload.repo.owner,,
+              repo: context.payload.repo.repo,
+              pull_number: context.payload.pull_request.number,
               draft: false
             });
 
@@ -126,7 +128,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const title = github.context.payload.pull_request.title;
+            const title = context.payload.pull_request.title;
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
 
             if (!versionRegex.test(title)) {
@@ -181,8 +183,8 @@ jobs:
           script: |
             const fileName = "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip";
             await github.repos.uploadReleaseAsset({
-              owner: github.context.repo.owner,
-              repo: github.context.repo.repo,
+              owner: context.payload.repo.owner,
+              repo: context.payload.repo.repo,
               release_id: ${{ steps.check-release-id.outputs.release_id }},
               name: fileName,
               data: require('fs').readFileSync(fileName)
