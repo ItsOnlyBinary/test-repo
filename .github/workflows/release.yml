@@ -24,7 +24,7 @@ jobs:
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
             const match = title.match(versionRegex);
 
-            core.setOutput("release_version", match ? title.match(versionRegex)[1] : '');
+            core.setOutput("release_version", match ? match[1] : '');
 
   pull-request:
     runs-on: ubuntu-latest
