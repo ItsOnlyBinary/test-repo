@@ -33,11 +33,11 @@ jobs:
 
             core.setOutput("release_version", title.match(versionRegex)[1]);
 
-      - name: Set PR to draft
-        run: gh pr ready ${{ github.event.number }} --undo
-
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set PR to draft
+        run: gh pr ready ${{ github.event.number }} --undo
 
       - name: Check package.json version
         run: |
