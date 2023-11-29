@@ -72,7 +72,7 @@ jobs:
         with:
           script: |
             const regex = /Release ID: (\d+)/;
-            const match = context.payload.pull_request.body.match(regex);
+            const match = context.payload.pull_request.body?.match(regex);
             const releaseId = match ? match[1] : null;
             core.setOutput('release_id', releaseId);
 
