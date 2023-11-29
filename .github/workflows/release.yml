@@ -23,7 +23,7 @@ jobs:
             const title = context.payload.pull_request.title || '';
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
             const match = title.match(versionRegex);
-
+            console.log('match', match);
             core.setOutput("release_version", match ? match[1] : '');
 
   pull-request:
