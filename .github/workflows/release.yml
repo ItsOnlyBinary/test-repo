@@ -115,7 +115,7 @@ jobs:
           github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
           script: |
             await github.rest.pulls.update({
-              owner: context.repo.owner,,
+              owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
               draft: false
