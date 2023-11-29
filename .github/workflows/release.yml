@@ -12,6 +12,8 @@ jobs:
   pull-request:
     runs-on: ubuntu-latest
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_WORKFLOW_KEY }}
 
     steps:
       - name: Check if PR title is a release title
@@ -23,10 +25,7 @@ jobs:
             const title = context.payload.pull_request.title;
             const versionRegex = /^Release v(\d+\.\d+\.\d+)$/;
 
-            console.log('context', context);
-            console.log('repo', context.repo);
-            console.log('pull', context.pull);
-            console.log('issue', context.issue);
+            console.log('event', ${{ github.event }});
 
             if (!versionRegex.test(title)) {
               core.setFailed("PR title does not match the release pattern");
@@ -35,16 +34,7 @@ jobs:
             core.setOutput("release_version", title.match(versionRegex)[1]);
 
       - name: Set PR to draft
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
-          script: |
-            github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              draft: true
-            });
+        run: gh pr ready ${{ github.event.number }} --undo
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -110,16 +100,7 @@ jobs:
             });
 
       - name: Remove draft status from PR
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.RELEASE_WORKFLOW_KEY }}
-          script: |
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              draft: false
-            });
+        run: gh pr ready ${{ github.event.number }}
 
   merged-request:
     runs-on: ubuntu-latest
