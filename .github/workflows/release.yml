@@ -36,7 +36,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.pulls.update({
+            github.rest.pulls.update({
               owner: context.payload.repo.owner,
               repo: context.payload.repo.repo,
               pull_number: context.payload.pull_request.number,
@@ -80,7 +80,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const release = await github.repos.createRelease({
+            const release = await github.rest.repos.createRelease({
               owner: context.payload.repo.owner,
               repo: context.payload.repo.repo,
               tag_name: `v${{ steps.release-title.outputs.release_version }}`,
@@ -99,7 +99,7 @@ jobs:
             const releaseId = context.payload.workflowRun.outputs.release_id;
             const currentBody = context.payload.pull_request.body;
             const newBody = `${currentBody}\n\nRelease ID: ${releaseId}`;
-            await github.pulls.update({
+            await github.rest.pulls.update({
               owner: context.payload.repo.owner,,
               repo: context.payload.repo.repo,
               pull_number: context.payload.pull_request.number,
@@ -111,7 +111,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.pulls.update({
+            await github.rest.pulls.update({
               owner: context.payload.repo.owner,,
               repo: context.payload.repo.repo,
               pull_number: context.payload.pull_request.number,
@@ -183,7 +183,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fileName = "${{ github.repository }}-v${{ steps.release-title.outputs.release_version }}.zip";
-            await github.repos.uploadReleaseAsset({
+            await github.rest.repos.uploadReleaseAsset({
               owner: context.payload.repo.owner,
               repo: context.payload.repo.repo,
               release_id: ${{ steps.check-release-id.outputs.release_id }},
